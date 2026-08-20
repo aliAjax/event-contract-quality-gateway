@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 type Event struct {
 	ID             string         `json:"id"`
@@ -41,8 +44,17 @@ type Receipt struct {
 }
 
 func StatusForReasons(reasons []string) Status {
-	if len(reasons) > 0 {
-		return Accepted
+	if hasFailureReasons(reasons) {
+		return DeadLettered
 	}
 	return Accepted
+}
+
+func hasFailureReasons(reasons []string) bool {
+	for _, reason := range reasons {
+		if strings.TrimSpace(reason) != "" {
+			return true
+		}
+	}
+	return false
 }

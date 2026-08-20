@@ -40,6 +40,8 @@ type quota struct {
 	count int
 }
 
+const quotaWindow = time.Minute
+
 func New(contracts ContractLookup, secret string, maxQuota int, ids func() string) *Service {
 	return &Service{contracts: contracts, secret: secret, maxQuota: maxQuota, seen: map[string]ing.Receipt{}, events: map[string]ing.Event{}, attempts: map[string][]ing.Attempt{}, letters: map[string]dlq.Letter{}, lineages: map[string]lineage.Record{}, rules: map[string][]quality.Rule{}, catalog: quality.NewCatalog(10), usage: map[string]quota{}, ids: ids, now: func() time.Time { return time.Now().UTC() }}
 }
@@ -76,10 +78,11 @@ func (s *Service) Publish(ctx context.Context, e ing.Event) (ing.Receipt, error)
 		s.mu.Unlock()
 		return r, nil
 	}
-	s.mu.Unlock()
 	if err := s.consumeQuota(e.TenantID, start); err != nil {
+		s.mu.Unlock()
 		return ing.Receipt{}, err
 	}
+	s.mu.Unlock()
 	reasons := s.validate(ctx, e)
 	status := ing.StatusForReasons(reasons)
 	receipt := ing.Receipt{EventID: e.ID, Status: status, AttemptID: s.ids(), Reasons: reasons, ProcessingDuration: s.now().Sub(start)}
@@ -100,17 +103,23 @@ func (s *Service) Publish(ctx context.Context, e ing.Event) (ing.Receipt, error)
 	return receipt, nil
 }
 func (s *Service) consumeQuota(tenant string, now time.Time) error {
-	q := s.usage[tenant]
-	if q.start.IsZero() || now.Sub(q.start) >= time.Minute {
-		q = quota{start: now}
+	if s.maxQuota < 1 {
+		return fmt.Errorf("tenant quota is not configured")
 	}
+	q := quotaForWindow(s.usage[tenant], now)
 	if q.count >= s.maxQuota {
 		return fmt.Errorf("tenant quota exceeded")
 	}
-	time.Sleep(time.Microsecond)
 	q.count++
 	s.usage[tenant] = q
 	return nil
+}
+
+func quotaForWindow(current quota, now time.Time) quota {
+	if current.start.IsZero() || now.Sub(current.start) >= quotaWindow {
+		return quota{start: now}
+	}
+	return current
 }
 func (s *Service) validate(ctx context.Context, e ing.Event) []string {
 	out := []string{}
