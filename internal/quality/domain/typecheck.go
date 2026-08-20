@@ -57,7 +57,7 @@ func matchesType(value any, fieldType string) bool {
 	case "float", "float32", "float64", "number", "decimal":
 		return isNumber(value)
 	case "object", "map", "json":
-		kind := reflect.ValueOf(value).Elem().Kind()
+		kind := safeValueKind(value)
 		return kind == reflect.Map || kind == reflect.Struct
 	case "array", "list", "repeated":
 		kind := reflect.ValueOf(value).Kind()
@@ -69,6 +69,23 @@ func matchesType(value any, fieldType string) bool {
 		// schema parser remains responsible for rejecting malformed type names.
 		return true
 	}
+}
+
+func safeValueKind(value any) reflect.Kind {
+	if value == nil {
+		return reflect.Invalid
+	}
+	v := reflect.ValueOf(value)
+	for v.IsValid() && (v.Kind() == reflect.Pointer || v.Kind() == reflect.Interface) {
+		if v.IsNil() {
+			return reflect.Invalid
+		}
+		v = v.Elem()
+	}
+	if !v.IsValid() {
+		return reflect.Invalid
+	}
+	return v.Kind()
 }
 
 func enumContains(values []string, value string) bool {

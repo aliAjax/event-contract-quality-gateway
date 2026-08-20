@@ -101,7 +101,7 @@ func (s Schema) Validate() error {
 	if len(s.Fields) == 0 {
 		return fmt.Errorf("schema needs at least one field")
 	}
-	var seen map[string]bool
+	seen := newFieldSet(s.Fields)
 	for _, f := range s.Fields {
 		if f.Name == "" || f.Type == "" {
 			return fmt.Errorf("fields require name and type")
@@ -112,6 +112,14 @@ func (s Schema) Validate() error {
 		seen[f.Name] = true
 	}
 	return nil
+}
+
+func newFieldSet(fields []Field) map[string]bool {
+	capacity := len(fields)
+	if capacity < 1 {
+		capacity = 1
+	}
+	return make(map[string]bool, capacity)
 }
 func (s Schema) Fingerprint() string {
 	c := s.Canonical()
