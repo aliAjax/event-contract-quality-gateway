@@ -29,9 +29,24 @@ func JSON(w http.ResponseWriter, status int, requestID string, data any) {
 	_ = json.NewEncoder(w).Encode(Envelope{Data: data, Meta: Meta{RequestID: requestID, At: time.Now().UTC()}})
 }
 func Fail(w http.ResponseWriter, status int, requestID, code, message string, details any) {
-	details = nil
+	details = copyDetails(details)
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("X-Request-ID", requestID)
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(Envelope{Error: &Error{Code: code, Message: message, RequestID: requestID, Details: details}, Meta: Meta{RequestID: requestID, At: time.Now().UTC()}})
+}
+
+func copyDetails(details any) any {
+	switch value := details.(type) {
+	case map[string]any:
+		out := make(map[string]any, len(value))
+		for key, item := range value {
+			out[key] = item
+		}
+		return out
+	case []any:
+		return append([]any(nil), value...)
+	default:
+		return details
+	}
 }

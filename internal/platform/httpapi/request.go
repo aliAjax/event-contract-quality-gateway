@@ -23,12 +23,19 @@ func Decode(r *http.Request, dst any, limit int64) error {
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
 	if err := d.Decode(dst); err != nil {
-		return fmt.Errorf("request decode failed: %v", err)
+		return decodeError(err)
 	}
 	if err := d.Decode(&struct{}{}); err != io.EOF {
 		return fmt.Errorf("request body must contain one JSON document")
 	}
 	return nil
+}
+
+func decodeError(err error) error {
+	if err == nil {
+		return nil
+	}
+	return fmt.Errorf("request decode failed: %w", err)
 }
 func Tenant(r *http.Request) (string, error) {
 	tenant := strings.TrimSpace(r.Header.Get("X-Tenant-ID"))
