@@ -64,10 +64,7 @@ func (r Rule) Execute(fields map[string]any) Result {
 			res.Reason = "value does not equal expected value"
 		}
 	case Regex:
-		res.Passed = exists && regexp.MustCompile(r.Value).MatchString(fmt.Sprint(v))
-		if !res.Passed {
-			res.Reason = "value does not match regex"
-		}
+		res.Passed, res.Reason = matchRegex(r.Value, exists, v)
 	case Min:
 		var n float64
 		_, e := fmt.Sscan(fmt.Sprint(v), &n)
@@ -89,4 +86,19 @@ func (r Rule) Execute(fields map[string]any) Result {
 	}
 	res.Duration = time.Since(start)
 	return res
+}
+
+func matchRegex(pattern string, exists bool, value any) (bool, string) {
+	if !exists {
+		return false, "value does not match regex"
+	}
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return false, "invalid regex configuration"
+	}
+	candidate := fmt.Sprint(value)
+	if !re.MatchString(candidate) {
+		return false, "value does not match regex"
+	}
+	return true, ""
 }
