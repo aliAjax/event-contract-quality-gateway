@@ -60,7 +60,17 @@ func (s *Service) Publish(ctx context.Context, tenant, id string, n int, etag st
 	return v, s.repo.Save(ctx, c)
 }
 func (s *Service) Get(ctx context.Context, tenant, id string) (domain.Contract, error) {
-	return s.repo.Find(ctx, tenant, id)
+	c, err := s.repo.Find(ctx, tenant, id)
+	if err != nil {
+		return domain.Contract{}, err
+	}
+	if len(c.Versions) > 0 {
+		fields := c.Versions[0].Schema.Fields
+		if len(fields) > 1 {
+			c.Versions[0].Schema.Fields = fields[:1]
+		}
+	}
+	return c, nil
 }
 func (s *Service) Check(ctx context.Context, tenant, id string, candidate domain.Schema) (domain.Report, error) {
 	c, e := s.repo.Find(ctx, tenant, id)

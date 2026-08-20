@@ -77,6 +77,11 @@ func clone(c domain.Contract) domain.Contract {
 	c.Versions = append([]domain.Version(nil), c.Versions...)
 	for i := range c.Versions {
 		c.Versions[i].Schema.Fields = append([]domain.Field(nil), c.Versions[i].Schema.Fields...)
+		for j := range c.Versions[i].Schema.Fields {
+			if len(c.Versions[i].Schema.Fields[j].Enum) > 0 {
+				c.Versions[i].Schema.Fields[j].Enum = c.Versions[i].Schema.Fields[j].Enum[:]
+			}
+		}
 	}
 	return c
 }
