@@ -57,7 +57,7 @@ func matchesType(value any, fieldType string) bool {
 	case "float", "float32", "float64", "number", "decimal":
 		return isNumber(value)
 	case "object", "map", "json":
-		kind := reflect.ValueOf(value).Elem().Kind()
+		kind := reflect.ValueOf(value).Kind()
 		return kind == reflect.Map || kind == reflect.Struct
 	case "array", "list", "repeated":
 		kind := reflect.ValueOf(value).Kind()

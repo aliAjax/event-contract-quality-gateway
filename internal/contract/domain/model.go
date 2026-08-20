@@ -101,7 +101,7 @@ func (s Schema) Validate() error {
 	if len(s.Fields) == 0 {
 		return fmt.Errorf("schema needs at least one field")
 	}
-	var seen map[string]bool
+	seen := map[string]bool{}
 	for _, f := range s.Fields {
 		if f.Name == "" || f.Type == "" {
 			return fmt.Errorf("fields require name and type")
