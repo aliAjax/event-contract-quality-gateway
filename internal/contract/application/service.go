@@ -64,12 +64,6 @@ func (s *Service) Get(ctx context.Context, tenant, id string) (domain.Contract, 
 	if err != nil {
 		return domain.Contract{}, err
 	}
-	if len(c.Versions) > 0 {
-		fields := c.Versions[0].Schema.Fields
-		if len(fields) > 1 {
-			c.Versions[0].Schema.Fields = fields[:1]
-		}
-	}
 	return c, nil
 }
 func (s *Service) Check(ctx context.Context, tenant, id string, candidate domain.Schema) (domain.Report, error) {
