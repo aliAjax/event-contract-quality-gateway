@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	contractapp "github.com/example/event-contract-quality-gateway/internal/contract/application"
 	ingestapp "github.com/example/event-contract-quality-gateway/internal/ingestion/application"
 	"github.com/example/event-contract-quality-gateway/internal/platform/config"
@@ -37,9 +38,12 @@ func main() {
 			os.Exit(1)
 		}
 	}()
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
-	_ = waitForSignal(context.Background(), stop)
+	runCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	if err := waitForSignal(runCtx, nil); err != nil && !errors.Is(err, context.Canceled) {
+		slog.Error("signal wait failed", "error", err)
+		return
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
@@ -50,8 +54,12 @@ func main() {
 }
 
 func waitForSignal(ctx context.Context, signals <-chan os.Signal) error {
-	if ctx.Err() != nil {
-		return nil
+	if ctx == nil {
+		return errors.New("signal wait requires a context")
+	}
+	if signals == nil {
+		<-ctx.Done()
+		return ctx.Err()
 	}
 	select {
 	case <-ctx.Done():

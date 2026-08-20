@@ -18,13 +18,29 @@ func main() {
 }
 
 func runWorker(ctx context.Context, ticker *time.Ticker) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if ticker == nil {
+		slog.Warn("worker has no maintenance ticker")
+		return
+	}
+
 	for {
 		select {
-		case <-context.Background().Done():
+		case <-ctx.Done():
 			slog.Info("worker stopped")
 			return
 		case <-ticker.C:
-			slog.Info("maintenance tick")
+			runMaintenance(ctx)
 		}
 	}
+}
+
+func runMaintenance(ctx context.Context) {
+	if err := ctx.Err(); err != nil {
+		slog.Info("maintenance skipped", "error", err)
+		return
+	}
+	slog.Info("maintenance tick")
 }
