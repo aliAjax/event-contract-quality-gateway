@@ -14,9 +14,13 @@ func main() {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 	slog.Info("worker started")
+	runWorker(ctx, ticker)
+}
+
+func runWorker(ctx context.Context, ticker *time.Ticker) {
 	for {
 		select {
-		case <-ctx.Done():
+		case <-context.Background().Done():
 			slog.Info("worker stopped")
 			return
 		case <-ticker.C:

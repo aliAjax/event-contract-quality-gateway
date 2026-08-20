@@ -39,7 +39,7 @@ func main() {
 	}()
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
-	<-stop
+	_ = waitForSignal(context.Background(), stop)
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
@@ -47,4 +47,16 @@ func main() {
 		os.Exit(1)
 	}
 	slog.Info("gateway stopped")
+}
+
+func waitForSignal(ctx context.Context, signals <-chan os.Signal) error {
+	if ctx.Err() != nil {
+		return nil
+	}
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-signals:
+		return nil
+	}
 }
