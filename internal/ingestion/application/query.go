@@ -32,7 +32,7 @@ func (s *Service) FindEvents(_ context.Context, filter ing.EventFilter, limit in
 		if !s.matchesEvent(event, filter) {
 			continue
 		}
-		items = append(items, cloneEvent(event))
+		items = append(items, event)
 	}
 	sort.Slice(items, func(i, j int) bool {
 		if items[i].ReceivedAt.Equal(items[j].ReceivedAt) {
@@ -49,9 +49,7 @@ func (s *Service) FindEvents(_ context.Context, filter ing.EventFilter, limit in
 		end = len(items)
 	}
 	page := ing.EventPage{Items: items[start:end], Total: len(items), Limit: limit}
-	if end < len(items) {
-		page.NextCursor = items[end-1].ID
-	}
+	page.NextCursor = ing.NextCursor(items, end)
 	return page, nil
 }
 
