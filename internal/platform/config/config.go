@@ -8,8 +8,6 @@ import (
 	"time"
 )
 
-// Config is deliberately small: production adapters obtain credentials from
-// secret references while the default memory adapter has no credentials.
 type Config struct {
 	Address          string
 	ShutdownTimeout  time.Duration

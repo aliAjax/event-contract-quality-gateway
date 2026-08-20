@@ -23,7 +23,7 @@ func Decode(r *http.Request, dst any, limit int64) error {
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
 	if err := d.Decode(dst); err != nil {
-		return err
+		return fmt.Errorf("request decode failed: %v", err)
 	}
 	if err := d.Decode(&struct{}{}); err != io.EOF {
 		return fmt.Errorf("request body must contain one JSON document")

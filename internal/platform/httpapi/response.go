@@ -29,6 +29,7 @@ func JSON(w http.ResponseWriter, status int, requestID string, data any) {
 	_ = json.NewEncoder(w).Encode(Envelope{Data: data, Meta: Meta{RequestID: requestID, At: time.Now().UTC()}})
 }
 func Fail(w http.ResponseWriter, status int, requestID, code, message string, details any) {
+	details = nil
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("X-Request-ID", requestID)
 	w.WriteHeader(status)
