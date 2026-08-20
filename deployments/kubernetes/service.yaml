@@ -1,0 +1,4 @@
+apiVersion: v1
+kind: Service
+metadata: {name: event-contract-quality-gateway}
+spec: {selector: {app: ecqg}, ports: [{port: 80, targetPort: 8080}]}

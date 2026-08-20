@@ -1,0 +1,14 @@
+syntax = "proto3";
+package ecqg.v1;
+option go_package = "github.com/example/event-contract-quality-gateway/api/proto;proto";
+service Ingestion { rpc PublishBatch(PublishBatchRequest) returns (PublishBatchResponse); }
+service Registry { rpc ResolveSchema(ResolveSchemaRequest) returns (ResolveSchemaResponse); }
+service Replay { rpc Start(StartReplayRequest) returns (StartReplayResponse); }
+message PublishBatchRequest { string tenant_id = 1; repeated Event events = 2; }
+message Event { string id = 1; string contract_id = 2; int32 schema_version = 3; bytes payload = 4; string idempotency_key = 5; }
+message PublishBatchResponse { repeated PublishResult results = 1; }
+message PublishResult { string event_id = 1; string status = 2; repeated string reasons = 3; }
+message ResolveSchemaRequest { string tenant_id = 1; string contract_id = 2; int32 version = 3; }
+message ResolveSchemaResponse { string fingerprint = 1; bytes canonical_schema = 2; }
+message StartReplayRequest { string dead_letter_id = 1; string actor_id = 2; }
+message StartReplayResponse { string status = 1; string event_id = 2; }

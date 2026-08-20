@@ -1,0 +1,15 @@
+services:
+  gateway:
+    build: .
+    ports: ["8080:8080"]
+    environment:
+      ECQG_ADDRESS: ":8080"
+      ECQG_ENV: "compose"
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ecqg
+      POSTGRES_PASSWORD: ecqg-dev-only
+      POSTGRES_DB: ecqg
+  kafka:
+    image: apache/kafka:3.8.0

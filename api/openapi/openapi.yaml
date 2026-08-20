@@ -1,0 +1,45 @@
+openapi: 3.1.0
+info:
+  title: Event Contract Quality Gateway
+  version: 1.0.0
+  description: Tenant-scoped event contract registration and quality validation.
+servers: [{url: http://localhost:8080}]
+paths:
+  /api/v1/contracts:
+    post:
+      summary: Register a contract
+      parameters: [{$ref: '#/components/parameters/Tenant'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RegisterContract'}}}}
+      responses: {'201': {description: created}, '422': {description: rejected}}
+  /api/v1/contracts/{id}/versions:
+    post:
+      summary: Add a draft schema version
+      parameters: [{$ref: '#/components/parameters/Tenant'}, {$ref: '#/components/parameters/ContractID'}]
+      responses: {'201': {description: created}}
+  /api/v1/contracts/{id}/versions/{version}/publish:
+    post:
+      summary: Publish a draft with optimistic concurrency
+      parameters: [{$ref: '#/components/parameters/Tenant'}, {$ref: '#/components/parameters/ContractID'}, {name: version, in: path, required: true, schema: {type: integer}}, {name: If-Match, in: header, required: true, schema: {type: string}}]
+      responses: {'200': {description: published}, '412': {description: stale etag}}
+  /api/v1/contracts/{id}/compatibility-check:
+    post:
+      summary: Check a prospective schema
+      parameters: [{$ref: '#/components/parameters/Tenant'}, {$ref: '#/components/parameters/ContractID'}]
+      responses: {'200': {description: report}}
+  /api/v1/ingest/events:
+    post:
+      summary: Validate and ingest one event
+      parameters: [{$ref: '#/components/parameters/Tenant'}, {name: Idempotency-Key, in: header, required: true, schema: {type: string}}]
+      responses: {'202': {description: accepted or dead-lettered}, '429': {description: quota exceeded}}
+components:
+  parameters:
+    Tenant: {name: X-Tenant-ID, in: header, required: true, schema: {type: string}}
+    ContractID: {name: id, in: path, required: true, schema: {type: string}}
+  schemas:
+    RegisterContract:
+      type: object
+      required: [name]
+      properties:
+        name: {type: string}
+        description: {type: string}
+        compatibility: {type: string, enum: [backward, forward, full, none]}
