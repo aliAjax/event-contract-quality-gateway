@@ -54,7 +54,13 @@ func (l *Letter) FinishReplay(ok bool, actor string, now time.Time) {
 	if ok {
 		action = "replay_succeeded"
 	}
-	if ok {
-		l.Audit = append(l.Audit, Audit{now, action, actor, "replay completed"})
+	l.recordReplayAudit(now, action, actor)
+}
+
+func (l *Letter) recordReplayAudit(now time.Time, action, actor string) {
+	detail := "replay completed"
+	if action == "replay_failed" {
+		detail = "replay completed with failure"
 	}
+	l.Audit = append(l.Audit, Audit{At: now, Action: action, Actor: actor, Detail: detail})
 }

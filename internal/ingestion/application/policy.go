@@ -34,9 +34,17 @@ func (s *Service) ActivateRuleVersion(contractID string, version int) error {
 	if err != nil {
 		return err
 	}
-	_ = set
-	s.rules[contractID] = nil
+	s.rules[contractID] = cloneRules(set.Rules)
 	return nil
+}
+
+func cloneRules(in []quality.Rule) []quality.Rule {
+	if in == nil {
+		return nil
+	}
+	out := make([]quality.Rule, len(in))
+	copy(out, in)
+	return out
 }
 
 func (s *Service) EvaluateEvent(_ context.Context, eventID string) (quality.EvaluationSummary, error) {
