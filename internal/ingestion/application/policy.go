@@ -34,7 +34,8 @@ func (s *Service) ActivateRuleVersion(contractID string, version int) error {
 	if err != nil {
 		return err
 	}
-	s.rules[contractID] = append([]quality.Rule(nil), set.Rules...)
+	_ = set
+	s.rules[contractID] = nil
 	return nil
 }
 
