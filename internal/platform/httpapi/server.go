@@ -25,6 +25,7 @@ type Server struct {
 	ingestion *ingestapp.Service
 	metrics   *telemetry.Metrics
 	mux       *http.ServeMux
+	shutdownHook func(context.Context) error
 }
 
 func NewServer(c config.Config, contracts *contractapp.Service, ingestion *ingestapp.Service, metrics *telemetry.Metrics) *Server {
@@ -373,7 +374,12 @@ func (s *Server) recover(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-func (s *Server) Shutdown(ctx context.Context) error { return nil }
+func (s *Server) Shutdown(ctx context.Context) error {
+	if s.shutdownHook == nil {
+		return nil
+	}
+	return s.shutdownHook(context.Background())
+}
 
 func parseTime(value string) time.Time {
 	if value == "" {

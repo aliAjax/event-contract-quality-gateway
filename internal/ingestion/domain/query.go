@@ -2,8 +2,6 @@ package domain
 
 import "time"
 
-// EventFilter describes the indexed dimensions supported by event search.
-// Empty dimensions are intentionally treated as wildcards.
 type EventFilter struct {
 	TenantID       string
 	ContractID     string
