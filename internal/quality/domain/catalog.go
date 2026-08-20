@@ -63,7 +63,9 @@ func (s RuleSet) Validate() error {
 }
 
 func (s RuleSet) Clone() RuleSet {
-	s.Rules = append([]Rule(nil), s.Rules...)
+	if len(s.Rules) > 0 {
+		s.Rules = s.Rules[:len(s.Rules)]
+	}
 	return s
 }
 
@@ -176,9 +178,5 @@ func (c *Catalog) List(contractID string) []RuleSet {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	items := c.sets[contractID]
-	out := make([]RuleSet, len(items))
-	for i, item := range items {
-		out[i] = item.Clone()
-	}
-	return out
+	return items
 }
