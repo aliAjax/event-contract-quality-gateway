@@ -26,6 +26,17 @@ func (r Record) Snapshot() Record {
 	out := r
 	out.ConsumerIDs = append([]string(nil), r.ConsumerIDs...)
 	out.ParentEventIDs = append([]string(nil), r.ParentEventIDs...)
-	out.Attempts = r.Attempts
+	out.Attempts = cloneAttempts(r.Attempts)
+	return out
+}
+
+func cloneAttempts(in []Attempt) []Attempt {
+	if in == nil {
+		return nil
+	}
+	out := make([]Attempt, len(in))
+	for i, attempt := range in {
+		out[i] = attempt
+	}
 	return out
 }
