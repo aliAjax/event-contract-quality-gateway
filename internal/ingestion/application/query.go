@@ -32,7 +32,7 @@ func (s *Service) FindEvents(_ context.Context, filter ing.EventFilter, limit in
 		if !s.matchesEvent(event, filter) {
 			continue
 		}
-		items = append(items, event)
+		items = append(items, cloneEvent(event))
 	}
 	sort.Slice(items, func(i, j int) bool {
 		if items[i].ReceivedAt.Equal(items[j].ReceivedAt) {
@@ -128,10 +128,24 @@ func cloneValue(value any) any {
 	switch typed := value.(type) {
 	case map[string]any:
 		return cloneFields(typed)
+	case map[string]string:
+		out := make(map[string]string, len(typed))
+		for key, item := range typed {
+			out[key] = item
+		}
+		return out
 	case []any:
 		out := make([]any, len(typed))
 		for i := range typed {
 			out[i] = cloneValue(typed[i])
+		}
+		return out
+	case []string:
+		return append([]string(nil), typed...)
+	case []map[string]any:
+		out := make([]map[string]any, len(typed))
+		for i := range typed {
+			out[i] = cloneFields(typed[i])
 		}
 		return out
 	default:

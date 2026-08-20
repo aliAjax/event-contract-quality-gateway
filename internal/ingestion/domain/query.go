@@ -45,8 +45,12 @@ type ReplayResult struct {
 }
 
 func NextCursor(items []Event, end int) string {
-	if end <= 0 || end > len(items) {
+	if end < 1 || end > len(items) {
 		return ""
 	}
-	return items[0].ID
+	last := items[end-1]
+	if last.ID == "" {
+		return ""
+	}
+	return last.ID
 }
