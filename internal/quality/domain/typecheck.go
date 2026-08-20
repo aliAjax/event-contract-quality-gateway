@@ -10,9 +10,6 @@ import (
 	"strings"
 )
 
-// TypeIssue describes a payload value that does not satisfy its contract
-// field. It is intentionally independent from Rule results so contract
-// failures and business-quality failures can be distinguished in telemetry.
 type TypeIssue struct {
 	Field    string `json:"field"`
 	Expected string `json:"expected"`

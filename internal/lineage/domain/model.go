@@ -21,3 +21,11 @@ type Attempt struct {
 	Duration time.Duration `json:"duration"`
 	Detail   string        `json:"detail"`
 }
+
+func (r Record) Snapshot() Record {
+	out := r
+	out.ConsumerIDs = append([]string(nil), r.ConsumerIDs...)
+	out.ParentEventIDs = append([]string(nil), r.ParentEventIDs...)
+	out.Attempts = r.Attempts
+	return out
+}

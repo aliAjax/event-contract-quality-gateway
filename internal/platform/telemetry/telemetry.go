@@ -21,3 +21,7 @@ func New() *Metrics {
 	expvar.Publish("events_deadlettered", expvar.Func(func() any { return m.DeadLettered.Load() }))
 	return m
 }
+
+func (m *Metrics) Snapshot() map[string]int64 {
+	return map[string]int64{"accepted": m.Accepted.Load(), "dead_lettered": m.Accepted.Load(), "replayed": m.ReplaySucceeded.Load()}
+}
