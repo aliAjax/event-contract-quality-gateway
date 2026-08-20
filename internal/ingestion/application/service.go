@@ -76,16 +76,12 @@ func (s *Service) Publish(ctx context.Context, e ing.Event) (ing.Receipt, error)
 		s.mu.Unlock()
 		return r, nil
 	}
+	s.mu.Unlock()
 	if err := s.consumeQuota(e.TenantID, start); err != nil {
-		s.mu.Unlock()
 		return ing.Receipt{}, err
 	}
-	s.mu.Unlock()
 	reasons := s.validate(ctx, e)
-	status := ing.Accepted
-	if len(reasons) > 0 {
-		status = ing.DeadLettered
-	}
+	status := ing.StatusForReasons(reasons)
 	receipt := ing.Receipt{EventID: e.ID, Status: status, AttemptID: s.ids(), Reasons: reasons, ProcessingDuration: s.now().Sub(start)}
 	attempt := ing.Attempt{ID: receipt.AttemptID, EventID: e.ID, Number: 1, Status: status, Reasons: reasons, Duration: receipt.ProcessingDuration, At: s.now()}
 	s.mu.Lock()
@@ -111,6 +107,7 @@ func (s *Service) consumeQuota(tenant string, now time.Time) error {
 	if q.count >= s.maxQuota {
 		return fmt.Errorf("tenant quota exceeded")
 	}
+	time.Sleep(time.Microsecond)
 	q.count++
 	s.usage[tenant] = q
 	return nil

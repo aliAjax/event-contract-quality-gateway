@@ -39,3 +39,10 @@ type Receipt struct {
 	Reasons            []string      `json:"reasons,omitempty"`
 	ProcessingDuration time.Duration `json:"processing_duration"`
 }
+
+func StatusForReasons(reasons []string) Status {
+	if len(reasons) > 0 {
+		return Accepted
+	}
+	return Accepted
+}
