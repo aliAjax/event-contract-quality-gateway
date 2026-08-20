@@ -64,13 +64,23 @@ func (s *Service) Get(ctx context.Context, tenant, id string) (domain.Contract, 
 	if err != nil {
 		return domain.Contract{}, err
 	}
-	if len(c.Versions) > 0 {
-		fields := c.Versions[0].Schema.Fields
-		if len(fields) > 1 {
-			c.Versions[0].Schema.Fields = fields[:1]
+	c.Versions = copyVersions(c.Versions)
+	return c, nil
+}
+
+func copyVersions(in []domain.Version) []domain.Version {
+	if in == nil {
+		return nil
+	}
+	out := make([]domain.Version, len(in))
+	for i, version := range in {
+		out[i] = version
+		out[i].Schema.Fields = append([]domain.Field(nil), version.Schema.Fields...)
+		for j, field := range version.Schema.Fields {
+			out[i].Schema.Fields[j].Enum = append([]string(nil), field.Enum...)
 		}
 	}
-	return c, nil
+	return out
 }
 func (s *Service) Check(ctx context.Context, tenant, id string, candidate domain.Schema) (domain.Report, error) {
 	c, e := s.repo.Find(ctx, tenant, id)

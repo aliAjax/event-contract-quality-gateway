@@ -74,14 +74,30 @@ func (m *MemoryContracts) List(_ context.Context, tenant string, limit int, curs
 	return out[start:end], next, nil
 }
 func clone(c domain.Contract) domain.Contract {
-	c.Versions = append([]domain.Version(nil), c.Versions...)
-	for i := range c.Versions {
-		c.Versions[i].Schema.Fields = append([]domain.Field(nil), c.Versions[i].Schema.Fields...)
-		for j := range c.Versions[i].Schema.Fields {
-			if len(c.Versions[i].Schema.Fields[j].Enum) > 0 {
-				c.Versions[i].Schema.Fields[j].Enum = c.Versions[i].Schema.Fields[j].Enum[:]
-			}
-		}
-	}
+	c.Versions = cloneVersions(c.Versions)
 	return c
+}
+
+func cloneVersions(in []domain.Version) []domain.Version {
+	if in == nil {
+		return nil
+	}
+	out := make([]domain.Version, len(in))
+	for i, version := range in {
+		out[i] = version
+		out[i].Schema.Fields = cloneFields(version.Schema.Fields)
+	}
+	return out
+}
+
+func cloneFields(in []domain.Field) []domain.Field {
+	if in == nil {
+		return nil
+	}
+	out := make([]domain.Field, len(in))
+	for i, field := range in {
+		out[i] = field
+		out[i].Enum = append([]string(nil), field.Enum...)
+	}
+	return out
 }
