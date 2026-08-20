@@ -378,7 +378,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	if s.shutdownHook == nil {
 		return nil
 	}
-	return s.shutdownHook(context.Background())
+	return s.shutdownHook(ctx)
 }
 
 func parseTime(value string) time.Time {
