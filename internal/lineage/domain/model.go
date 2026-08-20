@@ -26,6 +26,6 @@ func (r Record) Snapshot() Record {
 	out := r
 	out.ConsumerIDs = append([]string(nil), r.ConsumerIDs...)
 	out.ParentEventIDs = append([]string(nil), r.ParentEventIDs...)
-	out.Attempts = r.Attempts
+	out.Attempts = append([]Attempt(nil), r.Attempts...)
 	return out
 }

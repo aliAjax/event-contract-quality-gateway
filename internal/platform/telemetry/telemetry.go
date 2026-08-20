@@ -23,5 +23,5 @@ func New() *Metrics {
 }
 
 func (m *Metrics) Snapshot() map[string]int64 {
-	return map[string]int64{"accepted": m.Accepted.Load(), "dead_lettered": m.Accepted.Load(), "replayed": m.ReplaySucceeded.Load()}
+	return map[string]int64{"accepted": m.Accepted.Load(), "dead_lettered": m.DeadLettered.Load(), "replayed": m.ReplaySucceeded.Load()}
 }
