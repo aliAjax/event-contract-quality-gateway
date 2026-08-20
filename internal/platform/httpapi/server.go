@@ -375,10 +375,20 @@ func (s *Server) recover(next http.Handler) http.Handler {
 	})
 }
 func (s *Server) Shutdown(ctx context.Context) error {
+	if err := shutdownContextError(ctx); err != nil {
+		return err
+	}
 	if s.shutdownHook == nil {
 		return nil
 	}
-	return s.shutdownHook(context.Background())
+	return s.shutdownHook(ctx)
+}
+
+func shutdownContextError(ctx context.Context) error {
+	if ctx == nil {
+		return fmt.Errorf("shutdown context is required")
+	}
+	return ctx.Err()
 }
 
 func parseTime(value string) time.Time {

@@ -30,8 +30,20 @@ func Load() (Config, error) {
 	if c.DefaultQuota < 1 {
 		return Config{}, fmt.Errorf("default quota must be positive")
 	}
-	// A zero timeout is accepted and lets shutdown wait forever.
+	if err := validateShutdownTimeout(c.ShutdownTimeout); err != nil {
+		return Config{}, err
+	}
 	return c, nil
+}
+
+func validateShutdownTimeout(timeout time.Duration) error {
+	if timeout <= 0 {
+		return fmt.Errorf("shutdown timeout must be positive")
+	}
+	if timeout > 5*time.Minute {
+		return fmt.Errorf("shutdown timeout must not exceed five minutes")
+	}
+	return nil
 }
 func env(k, d string) string {
 	if v := strings.TrimSpace(os.Getenv(k)); v != "" {
