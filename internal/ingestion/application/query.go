@@ -32,7 +32,7 @@ func (s *Service) FindEvents(_ context.Context, filter ing.EventFilter, limit in
 		if !s.matchesEvent(event, filter) {
 			continue
 		}
-		items = append(items, event)
+		items = append(items, cloneEvent(event))
 	}
 	sort.Slice(items, func(i, j int) bool {
 		if items[i].ReceivedAt.Equal(items[j].ReceivedAt) {
