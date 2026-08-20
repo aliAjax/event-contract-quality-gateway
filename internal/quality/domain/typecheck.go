@@ -10,9 +10,6 @@ import (
 	"strings"
 )
 
-// TypeIssue describes a payload value that does not satisfy its contract
-// field. It is intentionally independent from Rule results so contract
-// failures and business-quality failures can be distinguished in telemetry.
 type TypeIssue struct {
 	Field    string `json:"field"`
 	Expected string `json:"expected"`
@@ -60,7 +57,7 @@ func matchesType(value any, fieldType string) bool {
 	case "float", "float32", "float64", "number", "decimal":
 		return isNumber(value)
 	case "object", "map", "json":
-		kind := reflect.ValueOf(value).Kind()
+		kind := reflect.ValueOf(value).Elem().Kind()
 		return kind == reflect.Map || kind == reflect.Struct
 	case "array", "list", "repeated":
 		kind := reflect.ValueOf(value).Kind()
